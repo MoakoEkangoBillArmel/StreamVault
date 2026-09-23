@@ -1,0 +1,32 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "15.3.9",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "@trpc/client": "^10.45.0",
+    "@trpc/react-query": "^10.45.0",
+    "@trpc/next": "^10.45.0",
+    "@tanstack/react-query": "^4.36.0",
+    "@streaming/shared": "workspace:*",
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.0",
+    "autoprefixer": "^10.4.0",
+    "lucide-react": "^0.511.0",
+    "clsx": "^2.1.0",
+    "tailwind-merge": "^2.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0"
+  }
+}

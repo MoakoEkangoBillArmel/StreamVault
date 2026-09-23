@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String         @id @default(cuid())
+  email     String         @unique
+  name      String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  listItems UserListItem[]
+}
+
+model Media {
+  id           String         @id @default(cuid())
+  title        String
+  description  String?
+  type         MediaType
+  url          String
+  thumbnailUrl String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  listItems    UserListItem[]
+}
+
+enum MediaType {
+  MOVIE
+  SERIES
+  EPISODE
+}
+
+model UserListItem {
+  id        String     @id @default(cuid())
+  userId    String
+  mediaId   String
+  status    ItemStatus @default(TOWATCH)
+  user      User       @relation(fields: [userId], references: [id])
+  media     Media      @relation(fields: [mediaId], references: [id])
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([userId, mediaId])
+}
+
+enum ItemStatus {
+  TOWATCH
+  WATCHING
+  COMPLETED
+}
