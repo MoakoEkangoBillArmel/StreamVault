@@ -1,0 +1,791 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- PACKAGES STANDARDS & ENCODAGE ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{geometry}
+\geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+
+% --- COULEURS & DESIGN ---
+\usepackage[table,xcdraw]{xcolor}
+\definecolor{primaryBlue}{RGB}{30, 64, 175}     % Bleu institutionnel / technique
+\definecolor{darkSlate}{RGB}{15, 23, 42}       % Texte principal foncé
+\definecolor{lightGray}{RGB}{248, 250, 252}    % Fond code / encadrés
+\definecolor{borderGray}{RGB}{203, 213, 225}   % Bordures discrètes
+\definecolor{accentGreen}{RGB}{22, 101, 52}    % Succès / terminé
+\definecolor{accentOrange}{RGB}{194, 65, 12}   % Partiel / En cours
+\definecolor{accentRed}{RGB}{185, 28, 28}      % Critique / Manquant
+
+% --- TABLEAUX & LISTES ---
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\setlist[itemize]{noitemsep, topsep=2pt}
+\setlist[enumerate]{noitemsep, topsep=2pt}
+
+% --- CODE & LISTINGS ---
+\usepackage{listings}
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    backgroundcolor=\color{lightGray},
+    frame=single,
+    rulecolor=\color{borderGray},
+    breaklines=true,
+    breakatwhitespace=true,
+    tabsize=2,
+    showstringspaces=false,
+    keywordstyle=\color{primaryBlue}\bfseries,
+    commentstyle=\color{gray}\itshape,
+    stringstyle=\color{accentGreen},
+    captionpos=b
+}
+
+% --- BOÎTES ET REMARQUES ---
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\newtcolorbox{infoBox}[1][]{
+    colback=lightGray,
+    colframe=primaryBlue,
+    fonttitle=\bfseries\color{white},
+    colbacktitle=primaryBlue,
+    enhanced,
+    attach boxed title to top left={yshift=-2mm, xshift=4mm},
+    title=#1,
+    arc=2mm,
+    boxrule=1pt,
+    top=4mm, bottom=3mm, left=3mm, right=3mm
+}
+
+\newtcolorbox{warningBox}[1][]{
+    colback=lightGray,
+    colframe=accentOrange,
+    fonttitle=\bfseries\color{white},
+    colbacktitle=accentOrange,
+    enhanced,
+    attach boxed title to top left={yshift=-2mm, xshift=4mm},
+    title=#1,
+    arc=2mm,
+    boxrule=1pt,
+    top=4mm, bottom=3mm, left=3mm, right=3mm
+}
+
+% --- GRAPHISMES & DIAGRAMMES (TIKZ) ---
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, shadows}
+
+% --- EN-TÊTES & PIEDS DE PAGE ---
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{darkSlate}\textbf{StreamVault} — Rapport Technique d'Ingénierie}
+\fancyhead[R]{\small\color{gray}INF331 / UY1 (2025-2026)}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% --- HYPERLIENS ---
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primaryBlue,
+    filecolor=primaryBlue,
+    urlcolor=primaryBlue,
+    citecolor=primaryBlue,
+    pdfauthor={Moako Ekango Bill Armel},
+    pdftitle={StreamVault - Rapport Technique et Architecture Logicielle}
+}
+
+% ==============================================================================
+% DOCUMENT PRINCIPAL
+% ==============================================================================
+\begin{document}
+
+% --- PAGE DE GARDE ---
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    
+    {\Large \textbf{UNIVERSITÉ DE YAOUNDÉ I}}\\[0.2cm]
+    {\large Faculté des Sciences — Département d'Informatique}\\[0.2cm]
+    {\small Unité d'Enseignement : \textbf{INF331 — Approche OO pour la Modélisation des SI}}\\[0.1cm]
+    {\small Année Académique 2025--2026}\\[1.5cm]
+    
+    \rule{\linewidth}{1.5pt}\\[0.4cm]
+    {\huge \bfseries RAPPORT TECHNIQUE D'ARCHITECTURE ET D'ÉTAT D'AVANCEMENT}\\[0.3cm]
+    {\LARGE \textcolor{primaryBlue}{\textbf{Plateforme de Streaming Vidéo : StreamVault}}}\\[0.1cm]
+    {\large Audit approfondi, analyse du code source, état réel, rétrospective des bugs et roadmap d'ingénierie logicielle}
+    \rule{\linewidth}{1.5pt}\\[2.5cm]
+    
+    \begin{minipage}{0.48\textwidth}
+        \textbf{Auteur / Développeur :} \\[0.2cm]
+        \textbf{Moako Ekango Bill Armel} \\
+        \texttt{armel.moako@facsciences-uy1.cm} \\
+        Dépôt : \href{https://github.com/MoakoEkangoBillArmel/StreamVault}{MoakoEkangoBillArmel/StreamVault}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \begin{flushright}
+            \textbf{Enseignant Responsable :} \\[0.2cm]
+            \textbf{M. Valéry MONTHE} \\
+            \texttt{valery.monthe@facsciences-uy1.cm} \\
+            Bureau R114, Bloc Pédagogique 1
+        \end{flushright}
+    \end{minipage}
+    
+    \vfill
+    
+    {\large Octobre 2025 / Septembre 2026}\\[0.3cm]
+    {\small Version du document : \textbf{1.0.0 -- État Réel Post-Initialisation Monorepo}}
+\end{titlepage}
+
+% --- SOMMAIRE ---
+\tableofcontents
+\newpage
+
+% ==============================================================================
+\section{Sources Utilisées et Cadre Méthodologique}
+% ==============================================================================
+
+Le présent rapport technique s'appuie de manière rigoureuse et exclusive sur les sources factuelles suivantes :
+\begin{enumerate}
+    \item \textbf{Support académique INF331 (Université de Yaoundé I) :} Cours dispensé par \textbf{M. Valéry MONTHE}, intitulé \emph{« Approche OO pour la modélisation des SI — Introduction Générale »}. Ce référentiel cadre le cycle de vie du logiciel (Cycle en V, phases de spécification, conception architecturale et détaillée, tests, métriques de qualité logicielle telles que la cohésion, le couplage, la maintenabilité et les principes SOLID).
+    \item \textbf{Dépôt de code officiel StreamVault :} Référentiel GitHub \texttt{MoakoEkangoBillArmel/StreamVault} (branche \texttt{main}), commit racine et historiques d'intégration.
+    \item \textbf{Inspection statique intégrale de l'arborescence :} Analyse des descripteurs de paquets (\texttt{package.json}, \texttt{pnpm-workspace.yaml}, \texttt{turbo.json}), des configurations TypeScript (\texttt{tsconfig.json}), du modèle de données Prisma ORM (\texttt{prisma/schema.prisma}) et des bibliothèques partagées (\texttt{packages/shared}).
+    \item \textbf{Journal des opérations d'ingénierie et résolutions de bogues :} Historique réel des blocages résolus (résolution de conflits de dépendances React 19, sécurisation et pooling Neon PostgreSQL, synchronisation du schéma Prisma avec gestion des pertes de données, fusion Git des branches non reliées).
+\end{enumerate}
+
+\begin{infoBox}[Règle d'Intégrité Intellectuelle]
+Aucune composante logicielle n'a été inventée ou présumée. Les éléments explicitement codés et validés sont documentés comme tels. Toute fonctionnalité planifiée dans le périmètre fonctionnel mais absente de l'arborescence est explicitement signalée sous la mention \textbf{« Non implémenté à ce stade »} ou \textbf{« À vérifier dans le projet »}.
+\end{infoBox}
+
+% ==============================================================================
+\section{Objectif Principal et Vision de StreamVault}
+% ==============================================================================
+
+\subsection{Nature et Raison d'Être du Système}
+\textbf{StreamVault} est conçu comme un système d'information distribué dédié à l'agrégation, la gestion de catalogues et la diffusion multimédia (films, séries, épisodes) en streaming fluide et sécurisé. 
+
+Contrairement aux applications monolithiques traditionnelles, StreamVault adopte une architecture \textbf{Monorepo moderne typée de bout en bout (End-to-End Type-Safety)}. Ce choix technique permet de répondre aux impératifs suivants :
+\begin{itemize}
+    \item \textbf{Unicité des définitions de données :} Partage strict des schémas de validation et des types de domaine entre l'interface utilisateur cliente et le moteur d'API backend, éliminant les erreurs de désérialisation d'exécution.
+    \item \textbf{Cohésion forte et couplage lâche :} Alignement direct avec les principes énoncés dans le cours INF331, isolant la couche persistance (Prisma/PostgreSQL), la couche routage/métier (API tRPC / Next.js) et la couche présentation (Next.js App Router).
+    \item \textbf{Optimisation des cycles de compilation :} Utilisation de \texttt{Turborepo} et \texttt{pnpm} pour un caching déterministe des artefacts et un parallélisme d'exécution optimal.
+\end{itemize}
+
+\subsection{Objectif d'Onboarding du Présent Rapport}
+Ce document constitue le manuel technique de référence permettant à tout nouvel ingénieur, évaluateur académique ou collaborateur :
+\begin{enumerate}
+    \item De comprendre la cartographie exhaustive des composants et leurs flux relationnels.
+    \item De constater ce qui est opérationnel (socle d'infrastructure, schéma base de données, monorepo) et ce qui reste à développer (code source applicatif des applications Web et API).
+    \item De suivre une démarche pas à pas pour mener le système jusqu'à sa phase de recette et de mise en production.
+\end{enumerate}
+
+% ==============================================================================
+\section{Architecture Globale du Système}
+% ==============================================================================
+
+\subsection{Vue d'Ensemble de l'Écosystème}
+StreamVault est structuré autour d'un modèle en couches logicielles découplées, orchestrées au sein d'un monorepo Turbo :
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    box/.style={rectangle, draw=primaryBlue, fill=lightGray, thick, minimum width=3.4cm, minimum height=1.1cm, text centered, rounded corners=2mm, font=\small},
+    dbBox/.style={cylinder, shape border rotate=90, draw=accentGreen, fill=lightGray, thick, minimum width=2.8cm, minimum height=1.2cm, text centered, font=\small},
+    extBox/.style={rectangle, draw=accentOrange, fill=lightGray, thick, dashed, minimum width=3.2cm, minimum height=1.1cm, text centered, rounded corners=2mm, font=\small},
+    arrow/.style={-{Latex[length=3mm]}, thick, darkSlate}
+]
+
+% Composants
+\node[box] (web) at (0, 4.5) {\textbf{Frontend (Client Web)}\\\footnotesize Next.js 15 / Tailwind / React 19};
+\node[box] (api) at (5.5, 4.5) {\textbf{Backend (API Gateway)}\\\footnotesize Next.js 15 / tRPC Server};
+\node[box] (shared) at (2.75, 2.5) {\textbf{Shared Package}\\\footnotesize Zod Schemas \& Domain Types};
+\node[dbBox] (db) at (5.5, 0.5) {\textbf{Neon PostgreSQL}\\\footnotesize Prisma ORM (Cloud)};
+\node[extBox] (streaming) at (0, 0.5) {\textbf{Stream Source / CDN}\\\footnotesize Flux HLS / Storage S3};
+
+% Relations
+\draw[arrow] (web) -- node[above, font=\scriptsize] {Appels tRPC (JSON-RPC)} (api);
+\draw[arrow, dashed] (shared) -- node[left, font=\scriptsize] {Types} (web);
+\draw[arrow, dashed] (shared) -- node[right, font=\scriptsize] {Validation} (api);
+\draw[arrow] (api) -- node[right, font=\scriptsize] {Prisma Engine (SQL)} (db);
+\draw[arrow] (web) -- node[left, font=\scriptsize] {Lecture Vidéo HLS} (streaming);
+
+\end{tikzpicture}
+\caption{Architecture globale et flux d'interconnexion de StreamVault}
+\label{fig:arch_globale}
+\end{figure}
+
+\subsection{Rôle et Spécification de Chaque Composant}
+
+\subsubsection{Frontend Web (\texttt{apps/web})}
+\begin{itemize}
+    \item \textbf{Rôle :} Fournir une interface utilisateur réactive (IHM) pour la découverte des contenus, la consultation des fiches descriptives, la gestion des listes de lecture personnelles et la restitution vidéo fluide.
+    \item \textbf{Stack technique :} Next.js 15.3.9, React 19.0.0, TailwindCSS 3.4.0, Lucide-React, \texttt{@trpc/client}, \texttt{@tanstack/react-query}.
+    \item \textbf{Port d'écoute :} \texttt{http://localhost:3000}.
+    \item \textbf{Entrées :} Interactions utilisateur (recherche, clics, lecture), réponses tRPC typées.
+    \item \textbf{Sorties :} Requêtes réseau RPC vers le backend, rendu DOM optimisé Server-Side Rendering (SSR) et Client-Side Rendering (CSR).
+    \item \textbf{État actuel :} \textbf{Non implémenté à ce stade} (seule la configuration \texttt{package.json} et \texttt{tsconfig.json} est initialisée ; les fichiers de vues \texttt{src/} ou \texttt{app/} restent à créer).
+\end{itemize}
+
+\subsubsection{Backend d'API (\texttt{apps/api})}
+\begin{itemize}
+    \item \textbf{Rôle :} Exposer les procédures métier distantes (RPC) sécurisées, assurer le contrôle d'accès, valider les entrées utilisateurs via Zod, et interagir avec la base de données relationnelle via Prisma Client.
+    \item \textbf{Stack technique :} Next.js 15.3.9, \texttt{@trpc/server} 10.45.0, \texttt{@prisma/client} 5.22.0, Zod 3.23.0.
+    \item \textbf{Port d'écoute :} \texttt{http://localhost:3001}.
+    \item \textbf{Entrées :} Requêtes HTTP POST/GET encapsulant les payloads tRPC.
+    \item \textbf{Sorties :} Données sérialisées JSON strictement conformes aux schémas de sortie, exceptions métier normalisées.
+    \item \textbf{État actuel :} \textbf{Non implémenté à ce stade} (les routeurs tRPC, contextes et handlers d'API dans \texttt{apps/api/src} doivent être codés).
+\end{itemize}
+
+\subsubsection{Couche Partagée de Domaine (\texttt{packages/shared})}
+\begin{itemize}
+    \item \textbf{Rôle :} Point de vérité unique pour les définitions de modèles et règles de validation Zod partagées entre le frontend et le backend.
+    \item \textbf{Fichiers concernés :} \texttt{packages/shared/src/index.ts}, \texttt{packages/shared/src/types.ts}.
+    \item \textbf{État actuel :} \textbf{Partiellement fonctionnel} (définit \texttt{UserSchema}, \texttt{User}, \texttt{MediaSchema}, \texttt{Media}). Doit être enrichi des enums et schémas manquants.
+\end{itemize}
+
+\subsubsection{Persistance et Base de Données (\texttt{prisma} / Neon Serverless Postgres)}
+\begin{itemize}
+    \item \textbf{Rôle :} Stockage relationnel persistant, ACID, hautement disponible avec connexion mutualisée (pooling).
+    \item \textbf{Fichier pivot :} \texttt{prisma/schema.prisma}.
+    \item \textbf{Hébergement :} Neon Cloud Postgres (région AWS \texttt{eu-central-1}).
+    \item \textbf{État actuel :} \textbf{Fonctionnel} (schéma validé, tables créées en ligne et pool de connexions opérationnel).
+\end{itemize}
+
+% ==============================================================================
+\section{Analyse Approfondie du Code Existant}
+% ==============================================================================
+
+\subsection{Modélisation des Données : \texttt{prisma/schema.prisma}}
+Le schéma Prisma constitue la colonne vertébrale des données du système. Il implémente 3 entités majeures et 2 énumérations :
+
+\begin{lstlisting}[language=SQL, caption={Définition du modèle relationnel dans schema.prisma}]
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String         @id @default(cuid())
+  email     String         @unique
+  name      String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  listItems UserListItem[]
+}
+
+model Media {
+  id           String         @id @default(cuid())
+  title        String
+  description  String?
+  type         MediaType
+  url          String
+  thumbnailUrl String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  listItems    UserListItem[]
+}
+
+enum MediaType {
+  MOVIE
+  SERIES
+  EPISODE
+}
+
+model UserListItem {
+  id        String     @id @default(cuid())
+  userId    String
+  mediaId   String
+  status    ItemStatus @default(TOWATCH)
+  user      User       @relation(fields: [userId], references: [id])
+  media     Media      @relation(fields: [mediaId], references: [id])
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([userId, mediaId])
+}
+
+enum ItemStatus {
+  TOWATCH
+  WATCHING
+  COMPLETED
+}
+\end{lstlisting}
+
+\subsubsection{Points Forts de la Conception}
+\begin{itemize}
+    \item \textbf{Identifiants CUID :} L'emploi de \texttt{@default(cuid())} prévient les collisions distribuées et évite l'énumération séquentielle des identifiants (vulnérabilité IDOR).
+    \item \textbf{Contrainte d'unicité relationnelle :} L'instruction \texttt{@@unique([userId, mediaId])} sur \texttt{UserListItem} garantit au niveau du moteur SGBD qu'un utilisateur ne peut ajouter deux fois le même média à sa liste personnelle.
+    \item \textbf{Gestion des métadonnées temporelles :} Les directives \texttt{@default(now())} et \texttt{@updatedAt} automatisent l'auditabilité des enregistrements.
+\end{itemize}
+
+\subsubsection{Faiblesses Techniques et Améliorations Nécessaires}
+\begin{itemize}
+    \item \textbf{Absence de suppression en cascade (\texttt{onDelete}) :} Les clés étrangères de \texttt{UserListItem} ne spécifient pas \texttt{onDelete: Cascade}. Supprimer un utilisateur ou un média générera une exception d'intégrité référentielle PostgreSQL.
+    \item \textbf{Modélisation limitée des séries télévisées :} Le modèle regroupe \texttt{MOVIE}, \texttt{SERIES} et \texttt{EPISODE} sur une même table sans relations hiérarchiques parent-enfant (ex: \texttt{parentSeriesId}, numéro de saison, numéro d'épisode).
+    \item \textbf{Absence de table d'authentification :} Aucun champ de hachage de mot de passe (\texttt{passwordHash}) ou modèle de session (NextAuth/OAuth) n'est présent.
+\end{itemize}
+
+\subsection{Bibliothèque Commune : \texttt{packages/shared/src/types.ts}}
+Ce fichier concrétise la convergence entre la modélisation orientée objet et la validation d'exécution :
+
+\begin{lstlisting}[language=TypeScript, caption={Schémas Zod et inférence de types TypeScript}]
+import { z } from 'zod';
+
+export const UserSchema = z.object({
+  id: z.string(),
+  email: z.string().email(),
+  name: z.string().nullable(),
+});
+export type User = z.infer<typeof UserSchema>;
+
+export const MediaSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+  type: z.enum(['MOVIE', 'SERIES', 'EPISODE']),
+  url: z.string(),
+});
+export type Media = z.infer<typeof MediaSchema>;
+\end{lstlisting}
+
+\subsubsection{Diagnostic Critique}
+\begin{itemize}
+    \item \textbf{Discordance avec Prisma :} Le champ \texttt{thumbnailUrl} présent dans le modèle Prisma \texttt{Media} est absent du schéma Zod \texttt{MediaSchema}. Toute réponse d'API retournant une miniature sera soit tronquée, soit rejetée en validation stricte.
+    \item \textbf{Manque de schémas de transfert (DTO) :} Il n'existe pas encore de schémas pour la création de médias (\texttt{CreateMediaInput}), la mise à jour du statut dans la liste (\texttt{UpdateListStatusInput}) ou l'authentification.
+\end{itemize}
+
+\subsection{Exemple de Flux d'Exécution Prévu}
+Voici le cycle nominal d'un appel applicatif au sein de l'architecture cible :
+
+\begin{figure}[htbp]
+\centering
+\begin{verbatim}
+Utilisateur (Navigateur)
+   |
+   | 1. Déclenche "Ajouter à ma liste"
+   v
+apps/web (Composant React / Mutation tRPC)
+   |
+   | 2. Validation côté client (Zod DTO) & Requête HTTP POST
+   v
+apps/api (Handler Next.js / api/trpc/[trpc])
+   |
+   | 3. Middleware d'authentification & Injection du Contexte
+   v
+tRPC Router (Router `mediaList.addItem`)
+   |
+   | 4. Validation runtime du payload (Zod)
+   v
+Prisma Client (`prisma.userListItem.upsert()`)
+   |
+   | 5. Requête SQL indexée (Pool Neon AWS)
+   v
+Base PostgreSQL (Persistance ACID)
+   |
+   | 6. Confirmation d'écriture
+   v
+Réponse JSON typée -> Mise à jour du cache TanStack Query -> UI React
+\end{verbatim}
+\caption{Flux de bout en bout d'une mutation utilisateur typée}
+\end{figure}
+
+% ==============================================================================
+\section{État d'Avancement Réel du Projet}
+% ==============================================================================
+
+Le tableau ci-dessous dresse l'inventaire rigoureux et exhaustif de l'état d'avancement de StreamVault à ce jour :
+
+\begin{table}[htbp]
+\centering
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{p{3.5cm} c c p{3.2cm} X}
+\toprule
+\textbf{Composant / Fonctionnalité} & \textbf{Statut} & \textbf{Finition} & \textbf{Fichiers concernés} & \textbf{Reste à réaliser} \\
+\midrule
+Configuration Monorepo & \textcolor{accentGreen}{\textbf{✅ Fait}} & 95\% & \texttt{package.json}, \texttt{turbo.json}, \texttt{pnpm-workspace} & Ajuster les targets de build Turbo si nécessaire. \\
+\midrule
+Modélisation Relationnelle & \textcolor{accentGreen}{\textbf{✅ Fait}} & 85\% & \texttt{prisma/schema.prisma} & Ajouter relations séries/saisons, cascade onDelete, tables sessions. \\
+\midrule
+Base de Données Cloud & \textcolor{accentGreen}{\textbf{✅ Fait}} & 90\% & Neon PostgreSQL & Sauvegardes automatisées, indexes de recherche texte. \\
+\midrule
+Types et Schémas Communs & \textcolor{accentOrange}{\textbf{🟡 Partiel}} & 40\% & \texttt{packages/shared/src/*} & Aligner \texttt{thumbnailUrl}, ajouter DTOs pour mutations tRPC. \\
+\midrule
+Backend API tRPC & \textcolor{accentRed}{\textbf{🔴 Manquant}} & 5\% & \texttt{apps/api/*} & Créer structure \texttt{src/}, initialiser tRPC context, routers et handlers. \\
+\midrule
+Authentification / Sessions & \textcolor{accentRed}{\textbf{🔴 Manquant}} & 0\% & \`A définir & Intégrer NextAuth.js (Auth.js) ou Clerk, sécuriser sessions JWT. \\
+\midrule
+Frontend Client Web & \textcolor{accentRed}{\textbf{🔴 Manquant}} & 5\% & \texttt{apps/web/*} & Créer layout Next.js, pages catalogue, lecteur vidéo, état client. \\
+\midrule
+Lecteur de Streaming Vidéo & \textcolor{accentRed}{\textbf{🔴 Manquant}} & 0\% & \`A définir & Intégrer Video.js ou Hls.js, gestion ABR et buffering. \\
+\midrule
+Ingestion / Scraping Métadonnées & \textcolor{accentRed}{\textbf{🔴 Manquant}} & 0\% & \`A définir & Développer connecteur TMDB / YouTube, normalisation des données. \\
+\midrule
+Suite de Tests Automatisés & \textcolor{accentRed}{\textbf{🔴 Manquant}} & 0\% & \`A définir & Configurer Vitest pour le partagé, Playwright pour le frontend. \\
+\bottomrule
+\end{tabularx}
+\caption{Matrice d'évaluation de la maturité logicielle de StreamVault}
+\end{table}
+
+\textbf{Légende des statuts :}
+\begin{itemize}
+    \item \textcolor{accentGreen}{\textbf{✅ Fait}} : Spécifié, implémenté dans le code, déployé ou fonctionnel sans encombre.
+    \item \textcolor{accentOrange}{\textbf{🟡 Partiel}} : Présent dans le dépôt mais incomplet ou non aligné avec les autres briques.
+    \item \textcolor{accentRed}{\textbf{🔴 Manquant}} : Uniquement configuré en dépendance ou absent du code source.
+\end{itemize}
+
+% ==============================================================================
+\section{Historique des Bugs Rencontrés et Résolutions}
+% ==============================================================================
+
+Durant les phases de constitution du monorepo et de synchronisation des services, plusieurs anomalies techniques critiques ont été interceptées et corrigées :
+
+\subsection{Bug 1 : Conflits de Dépendances Peer sur React 19 et Bibliothèques Écosystème}
+\begin{itemize}
+    \item \textbf{Problème initial :} Lors de l'installation des dépendances via \texttt{pnpm install}, blocage avec erreurs de peer dependencies sur \texttt{lucide-react} et les sous-dépendances Next.js refusant la version majeure React 19.
+    \item \textbf{Cause racine :} Émergence récente de React 19.0.0; certaines bibliothèques UI déclaraient des bornes strictes de peer dependencies limitées à \texttt{"^18.0.0"}.
+    \item \textbf{Composant concerné :} \texttt{package.json} racine, \texttt{apps/web/package.json}.
+    \item \textbf{Correction appliquée :} Mise à niveau vers Next.js \texttt{15.3.9}, \texttt{lucide-react} version \texttt{^0.511.0}, et insertion d'un bloc de résolution forcée dans le \texttt{package.json} racine :
+\begin{lstlisting}[language=json]
+"pnpm": {
+  "overrides": {
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  }
+}
+\end{lstlisting}
+    \item \textbf{Impact \& Risque de réapparition :} Résolution complète du graphe de dépendances. Risque faible tant que les futures bibliothèques ajoutées supportent l'arbre React 19.
+\end{itemize}
+
+\subsection{Bug 2 : Échec d'Authentification et de Connexion SSL à Neon PostgreSQL}
+\begin{itemize}
+    \item \textbf{Problème initial :} L'exécution de Prisma CLI échouait avec une erreur d'authentification ou d'indisponibilité du socket PostgreSQL distant.
+    \item \textbf{Cause racine :} URL de connexion malformée, absence d'assignation du point de terminaison de mutualisation (pooling) et omission des drapeaux SSL indispensables pour Neon AWS.
+    \item \textbf{Composant concerné :} Fichiers d'environnement \texttt{.env} et \texttt{.env.example}.
+    \item \textbf{Correction appliquée :} Configuration de la chaîne de connexion directe poolée avec les paramètres indispensables :
+\begin{lstlisting}
+DATABASE_URL="postgresql://neondb_owner:***@ep-dark-sky-b2br8td6-pooler.c-6.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+\end{lstlisting}
+    \item \textbf{Impact \& Risque de réapparition :} Connexion validée. Il conviendra de basculer vers un compte de service dédié aux environnements de production pour ne pas exposer le rôle \texttt{neondb\_owner}.
+\end{itemize}
+
+\subsection{Bug 3 : Désynchronisation de Schéma et Rejet de Prisma db push}
+\begin{itemize}
+    \item \textbf{Problème initial :} L'outil d'application de schéma refusait d'appliquer les mutations structurelles sur la base Neon car des tables préexistantes pouvaient subir une perte de colonnes.
+    \item \textbf{Cause racine :} Décalage d'état entre les précédentes expérimentations et le modèle cible unifié.
+    \item \textbf{Composant concerné :} \texttt{prisma/schema.prisma}.
+    \item \textbf{Correction appliquée :} Exécution contrôlée de la commande de synchronisation forcée :
+    \texttt{pnpm dlx prisma db push --accept-data-loss}.
+    \item \textbf{Amélioration recommandée :} Pour la future phase de production, abandonner \texttt{db push} au profit d'un flux de migrations traçables avec \texttt{prisma migrate dev} et \texttt{prisma migrate deploy}.
+\end{itemize}
+
+\subsection{Bug 4 : Rejet de Push Git Non-Fast-Forward sur GitHub}
+\begin{itemize}
+    \item \textbf{Problème initial :} Le push initial vers \texttt{origin/main} sur GitHub a été rejeté (\texttt{Updates were rejected because the remote contains work that you do not have locally}).
+    \item \textbf{Cause racine :} Le dépôt GitHub distant avait été initialisé via l'interface web avec un commit contenant le fichier \texttt{LICENSE} (commit \texttt{4be84ca}), tandis que le dépôt local contenait l'arbre complet du projet (commit \texttt{ef0508b}) sans ancêtre commun.
+    \item \textbf{Composant concerné :} Dépôt Git local et distant.
+    \item \textbf{Correction appliquée :} Intégration par \texttt{git fetch origin}, puis réconciliation des historiques sans ancêtre commun :
+    \texttt{git merge origin/main --allow-unrelated-histories}, suivie de la publication du commit de fusion \texttt{26f1aa2}.
+    \item \textbf{Impact :} Arbre Git sain, intègre et synchronisé sur la branche principale distante.
+\end{itemize}
+
+% ==============================================================================
+\section{Documentation des API et Services Externes}
+% ==============================================================================
+
+\subsection{API Actuellement Intégrées et Opérationnelles}
+\begin{itemize}
+    \item \textbf{Service Neon PostgreSQL Pooler :}
+    \begin{itemize}
+        \item \emph{Rôle :} Hébergement managé de la base de données relationnelle en architecture serverless.
+        \item \emph{Protocole :} PostgreSQL Wire Protocol (TCP port 5432 / TLS 1.3).
+        \item \emph{Authentification :} SCRAM-SHA-256 avec clé d'accès et chaîne sécurisée.
+        \item \emph{Gestion d'erreurs :} Gérée nativement par le moteur d'exécution Prisma Client (retry sur pool exhaustion).
+    \end{itemize}
+\end{itemize}
+
+\subsection{API Configurées en Dépendances (Mais Non Encore Câblées)}
+\begin{itemize}
+    \item \textbf{Routeur tRPC (\texttt{apps/api}) :}
+    \begin{itemize}
+        \item \emph{Rôle :} Passerelle RPC interne entre le Web et les services de persistance.
+        \item \emph{Endpoints cibles à créer :}
+        \begin{itemize}
+            \item \texttt{media.getAll} (Query) : Récupération paginée des médias filtrés par type.
+            \item \texttt{media.getById} (Query) : Détail complet d'un média avec statut de l'utilisateur.
+            \item \texttt{mediaList.toggle} (Mutation) : Ajout / retrait d'un média de la liste utilisateur.
+            \item \texttt{mediaList.updateStatus} (Mutation) : Transition d'état (\texttt{TOWATCH}, \texttt{WATCHING}, \texttt{COMPLETED}).
+        \end{itemize}
+        \item \emph{Format d'échange :} JSON (spécification batch tRPC v10).
+    \end{itemize}
+\end{itemize}
+
+\subsection{API Externes Envisagées pour l'Enrichissement}
+\begin{table}[htbp]
+\centering
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{p{3.5cm} p{2.2cm} p{2cm} X}
+\toprule
+\textbf{Service / API} & \textbf{Fournisseur} & \textbf{Méthode} & \textbf{Rôle dans StreamVault} \\
+\midrule
+TMDB API v3 & The Movie Database & REST / HTTPS & Récupération des métadonnées (titres officiels, synopsis, affiches, casting, dates de sortie). \\
+\midrule
+YouTube Data API v3 & Google Cloud & REST / HTTPS & Récupération des bandes-annonces officielles pour lecture intégrée (embed trailers). \\
+\midrule
+Cloudflare Stream & Cloudflare & REST + HLS & Stockage vidéo distribué, transcodage automatique vers formats ABR et protection par clés signées. \\
+\bottomrule
+\end{tabularx}
+\caption{Services externes planifiés pour la complétion de StreamVault}
+\end{table}
+
+% ==============================================================================
+\section{Ingénierie du Streaming Vidéo}
+% ==============================================================================
+
+\subsection{Protocoles et Mécanismes de Diffusion}
+Pour offrir une expérience de streaming professionnelle exempte de coupures ou de temps d'attente prohibitifs, le protocole conventionnel de téléchargement progressif HTTP direct (fichier \texttt{.mp4} unique) doit être proscrit au profit du streaming adaptatif en débit : **HLS (HTTP Live Streaming)** ou **MPEG-DASH**.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    block/.style={rectangle, draw=primaryBlue, fill=lightGray, thick, text centered, rounded corners=2mm, minimum height=1cm, font=\small},
+    arrow/.style={-{Latex[length=3mm]}, thick, darkSlate}
+]
+\node[block] (source) {Fichier Master (ex: 4K Prores)};
+\node[block, right=1.2cm of source] (transcode) {Transcodeur (FFmpeg)\\Segmenter HLS};
+\node[block, right=1.2cm of transcode] (cdn) {Stockage Cloud / CDN\\(\texttt{.m3u8} + \texttt{.ts})};
+\node[block, below=1.2cm of cdn] (client) {Lecteur Frontend\\(Hls.js / Video.js)};
+
+\draw[arrow] (source) -- node[above, font=\scriptsize] {Ingestion} (transcode);
+\draw[arrow] (transcode) -- node[above, font=\scriptsize] {Chunking 4s} (cdn);
+\draw[arrow] (cdn) -- node[right, font=\scriptsize] {Manifest \& Segments} (client);
+\draw[arrow] (client) -| node[above, font=\scriptsize, pos=0.25] {Mesure de bande passante (ABR)} (cdn);
+\end{tikzpicture}
+\caption{Chaîne de traitement et de distribution du streaming vidéo adaptatif (ABR)}
+\end{figure}
+
+\subsection{Fonctionnement Technique du Découpage HLS}
+\begin{enumerate}
+    \item \textbf{Encodage multi-profils :} Le flux source est transcodé en plusieurs profils de qualité (ex: 360p à 800 kbps, 720p à 2500 kbps, 1080p à 5000 kbps).
+    \item \textbf{Segmentation (Chunking) :} La vidéo est découpée en segments temporels de courte durée (généralement 4 à 6 secondes) portant l'extension \texttt{.ts} ou fragmentés en \texttt{.mp4} (\texttt{fMP4}).
+    \item \textbf{Fichiers Manifestes (\texttt{.m3u8}) :} Un manifeste maître regroupe la liste des qualités disponibles et pointe vers les sous-manifestes de chaque qualité listant les URLs de chaque segment vidéo.
+    \item \textbf{Régulation du Buffering côté Client :} Le lecteur vidéo frontend évalue périodiquement la vitesse de téléchargement des chunks. Si la bande passante chute, il bascule sans interruption perceptible vers la variante inférieure (Adaptive Bitrate Streaming - ABR).
+\end{enumerate}
+
+\subsection{Comparatif des Approches Architecturales}
+\begin{table}[htbp]
+\centering
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{p{3.2cm} X X}
+\toprule
+\textbf{Critère} & \textbf{Approche 1 : Stockage S3 + Transcodage Dédié} & \textbf{Approche 2 : Hébergeur Vidéo Spécialisé (Cloudflare Stream)} \\
+\midrule
+\textbf{Complexité technique} & Élevée (mise en place de workers FFmpeg, gestion des files SQS/BullMQ). & Faible (API prête à l'emploi, transcodage et lecteur clé en main). \\
+\midrule
+\textbf{Sécurité des flux} & Gestion manuelle des URLs pré-signées et chiffrement HLS AES-128. & Tokens d'accès éphémères natifs, restrictions de domaines et anti-hotlinking. \\
+\midrule
+\textbf{Coût initial} & Très faible à l'amorçage. & Modéré (facturation à la minute stockée et visualisée). \\
+\midrule
+\textbf{Recommandation} & \textbf{Idéale pour la mise en œuvre de StreamVault} dans le cadre académique avec des échantillons HLS hébergés sur S3 / Supabase Storage. & Alternative industrielle optimale pour un passage à l'échelle commerciale. \\
+\bottomrule
+\end{tabularx}
+\caption{Arbitrage architectural pour la couche streaming de StreamVault}
+\end{table}
+
+% ==============================================================================
+\section{Analyse Critique du Scraping et Traitement des Données Externes}
+% ==============================================================================
+
+\subsection{Contraintes Techniques, Éthiques et Légales}
+Dans l'ingénierie des plateformes vidéo, l'acquisition de données par moissonnage automatisé (scraping) de sites de diffusion tiers soulève des barrières majeures :
+\begin{itemize}
+    \item \textbf{Contraintes légales et réglementaires :} Les conditions générales d'utilisation (CGU) des plateformes tierces et le fichier standardisé \texttt{robots.txt} interdisent généralement l'aspiration automatisée.
+    \item \textbf{Protections anti-bots industrielles :} Les sites de streaming grand public déploient des pare-feux applicatifs (Cloudflare Bot Management, Datadome, captchas invisibles Turnstile/reCAPTCHA v3) bloquant systématiquement les requêtes serveurs automatisées (Puppeteer/Playwright non authentifiés).
+    \item \textbf{Gestion des DRM (Digital Rights Management) :} Les flux protégés par Widevine, FairPlay ou PlayReady chiffrent les segments vidéo au niveau matériel. Aucune technique d'aspiration légitime ne peut ni ne doit contourner ces verrous.
+\end{itemize}
+
+\subsection{Alternative Légitime Recommandée pour StreamVault}
+Plutôt que d'exposer StreamVault à des pannes chroniques dues à l'instabilité du scraping de pages HTML dynamiques, la stratégie d'ingestion doit reposer sur :
+\begin{enumerate}
+    \item \textbf{L'ingestion structurée via l'API officielle TMDB :} Extraction sécurisée, documentée et pérenne de l'ensemble des catalogues (titres, résumés, genres, affiches haute résolution).
+    \item \textbf{L'utilisation de flux de test légaux ou libres de droits :} Intégration de flux HLS publics certifiés (fonds libres Blender Open Movie, flux Tears of Steel, Big Buck Bunny en HLS multi-débit) pour valider l'infrastructure de lecture sans enfreindre la propriété intellectuelle.
+\end{enumerate}
+
+% ==============================================================================
+\section{Audit de Sécurité et Robustesse Logicielle}
+% ==============================================================================
+
+L'état actuel du code a fait l'objet d'un audit de vulnérabilité exhaustif :
+
+\begin{itemize}
+    \item \textbf{Contrôle d'accès et authentification (Risque Critique) :} 
+    Le modèle de données possède une entité \texttt{User}, mais aucune logique de mot de passe haché (Argon2 / bcrypt) ni de gestionnaire de sessions (JWT, cookies \texttt{HttpOnly}) n'est en place. \textbf{Priorité 1 : Intégrer NextAuth.js (Auth.js)}.
+    \item \textbf{Exposition des secrets de configuration :} 
+    L'URL de production Neon avec identifiants en clair a été isolée dans le fichier \texttt{.env}, exclu du suivi de version via \texttt{.gitignore}. Il convient de vérifier qu'aucun historique Git passé n'a tracé ces secrets.
+    \item \textbf{Injections SQL :} 
+    Le recours systématique à Prisma ORM élimine les vulnérabilités d'injection SQL par l'emploi de requêtes paramétrées natives.
+    \item \textbf{Validation des données entrantes :} 
+    L'utilisation conjointe de Zod et tRPC garantit qu'aucune donnée malformée ou polluée ne franchit le seuil du contrôleur d'API.
+    \item \textbf{Limitation de débit (Rate Limiting) :} 
+    Actuellement \textbf{non implémenté}. Il sera nécessaire d'installer un middleware de rate-limiting (ex: \texttt{@upstash/ratelimit}) sur la route tRPC pour immuniser le service contre les dénis de service applicatifs (DoS).
+\end{itemize}
+
+% ==============================================================================
+\section{Feuille de Route (Roadmap) et Priorisation des Tâches}
+% ==============================================================================
+
+\subsection{🔴 Priorité Critique (Blocage Fonctionnel Immédiat)}
+\begin{enumerate}
+    \item \textbf{Mise en place de l'API tRPC dans \texttt{apps/api} :}
+    \begin{itemize}
+        \item Créer \texttt{apps/api/src/trpc/trpc.ts} (initialisation de tRPC avec Zod).
+        \item Définir le contexte \texttt{apps/api/src/trpc/context.ts} instanciant Prisma.
+        \item Créer le routeur racine \texttt{apps/api/src/routers/index.ts} et les routeurs \texttt{mediaRouter} et \texttt{userListRouter}.
+        \item Exposer le routeur via le handler Next.js \texttt{apps/api/src/app/api/trpc/[trpc]/route.ts}.
+    \end{itemize}
+    \item \textbf{Génération et export du Prisma Client :}
+    \begin{itemize}
+        \item S'assurer que le client Prisma généré est directement consommable par \texttt{apps/api}.
+    \end{itemize}
+    \item \textbf{Création de l'application cliente Web dans \texttt{apps/web} :}
+    \begin{itemize}
+        \item Initialiser \texttt{apps/web/src/app/layout.tsx} avec les providers tRPC et TanStack Query.
+        \item Établir la page d'accueil \texttt{apps/web/src/app/page.tsx} affichant la grille des médias.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{🟠 Priorité Importante (Robustesse et Fonctionnalités Clés)}
+\begin{enumerate}
+    \item \textbf{Composant Lecteur Multimédia Réactif :} Intégrer un wrapper React de \texttt{video.js} ou \texttt{hls.js} gérant le changement de débit automatique, le plein écran et la mémorisation du temps de visionnage.
+    \item \textbf{Module d'Authentification Sécurisé :} Déployer NextAuth.js avec session stockée en base ou JWT signé.
+    \item \textbf{Extension du Schéma Partagé :} Aligner \texttt{packages/shared/src/types.ts} avec tous les champs de la base de données (ajout de \texttt{thumbnailUrl}, schémas de mise à jour de liste).
+\end{enumerate}
+
+\subsection{🟡 Améliorations (Expérience Utilisateur et Performance)}
+\begin{enumerate}
+    \item \textbf{Mise en cache globale :} Mise en place de revalidation ISR (Incremental Static Regeneration) sur le catalogue public.
+    \item \textbf{Recherche et Filtres avancés :} Ajout d'une barre de recherche par mot-clé et sélection de genre avec debounce.
+\end{enumerate}
+
+\subsection{🟢 Évolutions Futures}
+\begin{enumerate}
+    \item Recommandation personnalisée de contenus basée sur l'historique utilisateur.
+    \item Mode hors-ligne avec téléchargement de segments protégés (PWA).
+\end{enumerate}
+
+% ==============================================================================
+\section{Plan Séquentiel de Finalisation}
+% ==============================================================================
+
+Pour mener à bien le développement sans régression, l'équipe d'ingénierie doit respecter scrupuleusement la séquence d'exécution suivante :
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm,
+    stepBox/.style={rectangle, draw=primaryBlue, fill=lightGray, thick, minimum width=9cm, minimum height=0.75cm, text centered, rounded corners=1.5mm, font=\small},
+    arrow/.style={-{Latex[length=2.5mm]}, thick, primaryBlue}
+]
+\node[stepBox] (s1) {\textbf{Étape 1 :} Alignement du package partagé (\texttt{packages/shared}) avec Prisma};
+\node[stepBox, below=of s1] (s2) {\textbf{Étape 2 :} Instanciation du client Prisma et création du routeur tRPC (\texttt{apps/api})};
+\node[stepBox, below=of s2] (s3) {\textbf{Étape 3 :} Raccordement du client Web tRPC et mise en place des layouts (\texttt{apps/web})};
+\node[stepBox, below=of s3] (s4) {\textbf{Étape 4 :} Implémentation du lecteur vidéo HLS et liaison des URLs de flux};
+\node[stepBox, below=of s4] (s5) {\textbf{Étape 5 :} Intégration de l'authentification et protection des mutations privées};
+\node[stepBox, below=of s5] (s6) {\textbf{Étape 6 :} Écriture des suites de tests automatisés (Unitaires \& Intégration)};
+\node[stepBox, below=of s6] (s7) {\textbf{Étape 7 :} Déploiement en pré-production (Vercel / Railway) \& Validation finale};
+
+\draw[arrow] (s1) -- (s2);
+\draw[arrow] (s2) -- (s3);
+\draw[arrow] (s3) -- (s4);
+\draw[arrow] (s4) -- (s5);
+\draw[arrow] (s5) -- (s6);
+\draw[arrow] (s6) -- (s7);
+\end{tikzpicture}
+\caption{Plan de travail séquentiel recommandé pour la finalisation de StreamVault}
+\end{figure}
+
+% ==============================================================================
+\section{Stratégie Complète de Tests et Validation}
+% ==============================================================================
+
+Conformément aux exigences du Cycle en V présenté dans le cours INF331, chaque niveau de spécification logicielle doit être couvert par un échelon de test adapté :
+
+\begin{itemize}
+    \item \textbf{Tests Unitaires (Isolation) :}
+    \begin{itemize}
+        \item \emph{Outil :} Vitest.
+        \item \emph{Cible :} Validation des schémas Zod dans \texttt{packages/shared}. Vérification des rejets de format (emails invalides, types de médias inconnus).
+    \end{itemize}
+    \item \textbf{Tests d'Intégration d'API :}
+    \begin{itemize}
+        \item \emph{Méthode :} Invocation directe du routeur tRPC via un caller serveur (\texttt{appRouter.createCaller()}) couplé à une base de données de test éphémère.
+        \item \emph{Scénario :} Création d'un média $\to$ affectation à un utilisateur $\to$ modification de l'état en \texttt{WATCHING} $\to$ vérification de l'unicité du couple \texttt{(userId, mediaId)}.
+    \end{itemize}
+    \item \textbf{Tests End-to-End (Bout en Bout - Validation Système) :}
+    \begin{itemize}
+        \item \emph{Outil :} Playwright.
+        \item \emph{Scénario critique :} Un utilisateur anonyme navigue sur la page d'accueil, clique sur un média, vérifie le chargement du lecteur HLS et l'absence d'erreurs 404 sur les segments vidéo.
+    \end{itemize}
+\end{itemize}
+
+% ==============================================================================
+\section{Diagnostic Synthétique Final}
+% ==============================================================================
+
+\subsection{Ce qui est Déjà Terminé et Opérationnel}
+\begin{itemize}
+    \item Infrastructure Monorepo moderne configurée avec gestion des dépendances via \texttt{pnpm} et orchestration Turbo.
+    \item Base de données relationnelle Neon PostgreSQL active sur le cloud AWS avec mutualisation de connexions.
+    \item Schéma relationnel Prisma déployé et synchronisé.
+    \item Versioning Git initialisé et réconcilié sur GitHub avec convention de commits propres.
+\end{itemize}
+
+\subsection{Ce qui Reste à Développer (Lacunes Majeures)}
+\begin{itemize}
+    \item Absence totale d'implémentation de code dans \texttt{apps/api/src} (pas de serveur tRPC opérationnel).
+    \item Absence totale d'interface utilisateur dans \texttt{apps/web/src} (pas de pages ni de lecteur vidéo).
+    \item Pas encore de système d'authentification utilisateur ni de gestion de tokens de session.
+\end{itemize}
+
+\subsection{Chemin Exact vers la Version Stable (Synthèse Opérationnelle)}
+Le projet StreamVault dispose d'une **fondation d'architecture excellente, hautement professionnelle et parfaitement conforme aux règles du génie logiciel contemporain**. 
+Pour franchir le cap de la mise en service, le prochain cycle de développement doit se concentrer prioritairement sur l'écriture du **serveur tRPC dans \texttt{apps/api}**, suivi de la **création du tableau de bord utilisateur dans \texttt{apps/web}**.
+
+% ==============================================================================
+\section{Références Bibliographiques et Techniques}
+% ==============================================================================
+\begin{thebibliography}{9}
+    \bibitem{monthe}
+    M. Valéry Monthe,
+    \emph{INF331 : Approche OO pour la modélisation des SI — Introduction Générale},
+    Université de Yaoundé I, Département d'Informatique, Octobre 2025.
+    
+    \bibitem{sommerville}
+    Ian Sommerville,
+    \emph{Software Engineering (10th Edition)},
+    Pearson, 2015.
+    
+    \bibitem{trpc}
+    Alex Johansson et al.,
+    \emph{tRPC: End-to-end typesafe APIs made easy},
+    \url{https://trpc.io}, 2024.
+    
+    \bibitem{prisma}
+    Prisma Team,
+    \emph{Prisma ORM Documentation: Next-generation ORM for Node.js and TypeScript},
+    \url{https://www.prisma.io/docs}, 2024.
+\end{thebibliography}
+
+\end{document}
