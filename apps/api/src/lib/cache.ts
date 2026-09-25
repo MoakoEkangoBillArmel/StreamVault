@@ -11,8 +11,17 @@ export function cacheQuery<T>(
   keyParts: string[],
   options: { revalidate?: number; tags?: string[] } = {}
 ): Promise<T> {
-  return unstable_cache(fn, keyParts, {
-    revalidate: options.revalidate ?? 3600,
-    tags: options.tags,
-  })();
+  // Always bypass in Node testing script since unstable_cache needs Next.js runtime
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+    return fn();
+  }
+  
+  try {
+    return unstable_cache(fn, keyParts, {
+      revalidate: options.revalidate ?? 3600,
+      tags: options.tags,
+    })();
+  } catch (error: any) {
+    return fn();
+  }
 }

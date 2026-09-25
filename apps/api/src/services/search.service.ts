@@ -66,11 +66,11 @@ export class SearchService {
 
       const rawItems = await this.prisma.$queryRawUnsafe<any[]>(
         `
-        SELECT m.* 
+        SELECT m.id 
         FROM "Media" m
         ${joinClause}
         ${whereSql}
-        ORDER BY ${orderByField} ${orderDir} NULLS LAST
+        ORDER BY m.${orderByField} ${orderDir} NULLS LAST
         LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
         `,
         ...params, limit, skip
