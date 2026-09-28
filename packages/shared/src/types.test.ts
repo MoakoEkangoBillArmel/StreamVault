@@ -185,27 +185,27 @@ describe('WatchHistorySchema', () => {
 
 describe('UserLoginInput', () => {
   it('accepts valid login', () => {
-    expect(UserLoginInput.parse({ email: 'a@b.com', password: '123456' }))
-      .toMatchObject({ email: 'a@b.com', password: '123456' });
+    expect(UserLoginInput.parse({ email: 'a@b.com', password: 'password1234' }))
+      .toMatchObject({ email: 'a@b.com', password: 'password1234' });
   });
 
-  it('rejects short password', () => {
-    expect(() => UserLoginInput.parse({ email: 'a@b.com', password: '12345' })).toThrow();
+  it('rejects short password (< 12 chars)', () => {
+    expect(() => UserLoginInput.parse({ email: 'a@b.com', password: '12345678901' })).toThrow(); // 11 chars
   });
 
   it('rejects invalid email', () => {
-    expect(() => UserLoginInput.parse({ email: 'bad', password: '123456' })).toThrow();
+    expect(() => UserLoginInput.parse({ email: 'bad', password: 'password1234' })).toThrow();
   });
 });
 
 describe('UserRegisterInput', () => {
   it('accepts valid registration', () => {
-    const input = { email: 'a@b.com', password: '123456', name: 'Alice' };
+    const input = { email: 'a@b.com', password: 'password1234', name: 'Alice' };
     expect(UserRegisterInput.parse(input)).toMatchObject(input);
   });
 
   it('accepts registration without name', () => {
-    expect(UserRegisterInput.parse({ email: 'a@b.com', password: '123456' }))
+    expect(UserRegisterInput.parse({ email: 'a@b.com', password: 'password1234' }))
       .toMatchObject({ email: 'a@b.com' });
   });
 });

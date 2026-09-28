@@ -80,8 +80,10 @@ async function runAudit() {
   // 11. WATCH SYSTEM
   console.log('\n--- 11. WATCH SYSTEM ---');
   // Mock an episode for testing
-  const episode = await prisma.episode.findFirstOrThrow({
-    where: { mediaId, number: 1 }
+  const episode = await prisma.episode.upsert({
+    where: { mediaId_number: { mediaId, number: 1 } },
+    create: { mediaId, number: 1, title: 'Asteroid Blues' },
+    update: {}
   });
 
   await authCaller.history.upsertPosition({ episodeId: episode.id, resumePosition: 300, completed: false });
