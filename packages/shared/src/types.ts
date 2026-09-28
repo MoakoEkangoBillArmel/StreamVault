@@ -94,12 +94,12 @@ export type WatchHistory = z.infer<typeof WatchHistorySchema>;
 
 export const UserLoginInput = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
+  password: z.string().min(12).max(200),
 });
 
 export const UserRegisterInput = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
+  password: z.string().min(12).max(200),
   name: z.string().optional(),
 });
 
@@ -222,7 +222,7 @@ export interface CanonicalMedia {
   titleEnglish?: string | null;
   titleNative?: string | null;
   synopsis?: string | null;
-  type: string;
+  type?: string | null;
   format?: string | null;
   status: string;
   seasonYear?: number | null;
@@ -236,6 +236,7 @@ export interface CanonicalMedia {
   endDate?: Date | null;
   genres: string[];
   externalIds: { provider: string; externalId: string }[];
+  episodes?: { number: number; title?: string | null; aired?: Date | null; synopsis?: string | null }[];
 }
 
 export interface MetadataProvider {

@@ -6,7 +6,11 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "e2e-audit": "tsx e2e-audit.ts",
+    "fts:setup": "tsx setup-fts.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -15,6 +19,8 @@
     "@trpc/next": "^10.45.0",
     "@trpc/react-query": "^10.45.0",
     "@trpc/server": "^10.45.0",
+    "bcrypt": "^6.0.0",
+    "jsonwebtoken": "^9.0.3",
     "next": "15.3.9",
     "react": "19.0.0",
     "react-dom": "19.0.0",

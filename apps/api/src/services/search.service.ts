@@ -36,10 +36,10 @@ export class SearchService {
 
     if (q && q.trim().length > 0) {
       // Raw query for FTS
-      const tsQuery = q.trim().split(/\s+/).join(' | '); // simple OR matching
+      const tsQuery = q.trim();
       
       // Building dynamic raw conditions
-      const conditions: string[] = [`"title_search" @@ to_tsquery('english', $1)`];
+      const conditions: string[] = [`"title_search" @@ websearch_to_tsquery('english', $1)`];
       const params: any[] = [tsQuery];
       let paramIndex = 2;
 
@@ -61,7 +61,7 @@ export class SearchService {
 
       const whereSql = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
       
-      const orderByField = sortBy === 'score' ? '"averageScore"' : sortBy === 'popularity' ? '"popularity"' : sortBy === 'startDate' ? '"startDate"' : '"popularity"';
+      const orderByField = sortBy === 'score' ? '"averageScore"' : sortBy === 'popularity' ? '"popularity"' : sortBy === 'startDate' ? '"startDate"' : sortBy === 'title' ? '"title"' : '"popularity"';
       const orderDir = sortOrder === 'asc' ? 'ASC' : 'DESC';
 
       const rawItems = await this.prisma.$queryRawUnsafe<any[]>(
@@ -102,9 +102,11 @@ export class SearchService {
 
     } else {
       // Standard Prisma query
-      const orderBy = sortBy === 'score' ? { averageScore: sortOrder || 'desc' }
-                    : sortBy === 'popularity' ? { popularity: sortOrder || 'desc' }
-                    : sortBy === 'startDate' ? { startDate: sortOrder || 'desc' }
+      const defaultOrder = sortOrder || 'desc';
+      const orderBy = sortBy === 'score' ? { averageScore: defaultOrder }
+                    : sortBy === 'popularity' ? { popularity: defaultOrder }
+                    : sortBy === 'startDate' ? { startDate: defaultOrder }
+                    : sortBy === 'title' ? { title: defaultOrder }
                     : { popularity: 'desc' }; // Default sort
 
       items = await this.prisma.media.findMany({

@@ -55,7 +55,18 @@ export const watchRouter = router({
         },
       });
 
-      const continueWatching = [];
+      const episodeIds = progress
+        .map(p => p.media.episodes.find(e => e.number === p.lastWatchedEpNum)?.id)
+        .filter(id => id) as string[];
+
+      const histories = await ctx.prisma.watchHistory.findMany({
+        where: {
+          userId: ctx.user.id,
+          episodeId: { in: episodeIds }
+        }
+      });
+      const historyMap = new Map(histories.map(h => [h.episodeId, h]));
+      const continueWatching: any[] = [];
 
       for (const p of progress) {
         if (!p.lastWatchedEpNum) continue;
@@ -64,15 +75,8 @@ export const watchRouter = router({
         const lastEpisode = p.media.episodes.find(e => e.number === p.lastWatchedEpNum);
         if (!lastEpisode) continue;
 
-        // Fetch history for this episode
-        const history = await ctx.prisma.watchHistory.findUnique({
-          where: {
-            userId_episodeId: {
-              userId: ctx.user.id,
-              episodeId: lastEpisode.id,
-            }
-          }
-        });
+        // Fetch history for this episode from map
+        const history = historyMap.get(lastEpisode.id);
 
         if (!history) continue;
 

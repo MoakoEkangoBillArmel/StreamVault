@@ -14,6 +14,10 @@ export const favoritesRouter = router({
   toggle: protectedProcedure
     .input(ToggleMediaInput)
     .mutation(async ({ ctx, input }) => {
+      const mediaExists = await ctx.prisma.media.findUnique({ where: { id: input.mediaId } });
+      if (!mediaExists) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Media not found' });
+      }
       const existing = await ctx.prisma.favorite.findUnique({
         where: {
           userId_mediaId: {

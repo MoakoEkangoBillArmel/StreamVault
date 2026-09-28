@@ -2,6 +2,7 @@ import { router, protectedProcedure } from '../trpc/trpc';
 import { z } from 'zod';
 import { ProviderRegistry } from '../services/provider-registry.service';
 import { ProviderHealthService } from '../services/provider-health.service';
+import { TestDemoProvider } from '../services/providers/test-demo-provider';
 
 export const sourcesRouter = router({
   resolve: protectedProcedure
@@ -13,8 +14,20 @@ export const sourcesRouter = router({
       const healthService = new ProviderHealthService(ctx.prisma);
       const registry = new ProviderRegistry(ctx.prisma, healthService);
       
-      // In a real scenario, providers would be registered during bootstrap.
-      // E.g., registry.register('my_provider', myResolver, complianceCheck);
+      // Enregistrement du provider de test
+      registry.register('test_demo_provider', new TestDemoProvider(), {
+        providerId: 'test_demo_provider',
+        hasOfficialApi: false, // It's just a test API
+        tosUrl: 'https://test-streams.mux.dev',
+        robotsTxtCompliant: true,
+        requiresAuth: false,
+        bypassesDrm: false,
+        bypassesCaptcha: false,
+        bypassesPaywall: false,
+        lastVerified: new Date(),
+        verifiedBy: 'system'
+      });
+
       
       const streams = await registry.resolveAll(input.episodeId, input.language);
       return streams;

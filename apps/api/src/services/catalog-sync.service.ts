@@ -7,84 +7,114 @@ export class CatalogSyncService {
   public async syncMedia(media: CanonicalMedia) {
     if (media.externalIds.length === 0) throw new Error('Cannot sync media without external IDs');
 
-    // Find existing media by external ID
-    const existingExtId = await this.prisma.externalId.findFirst({
-      where: {
-        OR: media.externalIds.map(e => ({
-          provider: e.provider,
-          externalId: e.externalId
-        }))
-      },
-      include: { media: true }
-    });
-
-    // Ensure all genres exist
-    for (const genreName of media.genres) {
-      await this.prisma.genre.upsert({
-        where: { name: genreName },
-        update: {},
-        create: { name: genreName }
+    return await this.prisma.$transaction(async (tx) => {
+      // Find existing media by external ID
+      const existingExtId = await tx.externalId.findFirst({
+        where: {
+          OR: media.externalIds.map(e => ({
+            provider: e.provider,
+            externalId: e.externalId
+          }))
+        },
+        include: { media: true }
       });
-    }
-    const genres = await this.prisma.genre.findMany({
-      where: { name: { in: media.genres } }
-    });
 
-    const mediaData = {
-      title: media.title,
-      titleEnglish: media.titleEnglish,
-      titleNative: media.titleNative,
-      synopsis: media.synopsis,
-      type: media.type as MediaType,
-      format: media.format as MediaFormat,
-      status: media.status as MediaStatus,
-      seasonYear: media.seasonYear,
-      seasonQuarter: media.seasonQuarter as SeasonQuarter,
-      episodeCount: media.episodeCount,
-      coverImage: media.coverImage,
-      bannerImage: media.bannerImage,
-      averageScore: media.averageScore,
-      popularity: media.popularity,
-      startDate: media.startDate,
-      endDate: media.endDate,
-    };
+      // Ensure all genres exist using createMany
+      if (media.genres.length > 0) {
+        await tx.genre.createMany({
+          data: media.genres.map(g => ({ name: g })),
+          skipDuplicates: true
+        });
+      }
 
-    let syncedMedia;
+      const genres = media.genres.length > 0 ? await tx.genre.findMany({
+        where: { name: { in: media.genres } }
+      }) : [];
 
-    if (existingExtId) {
-      // Update existing
-      syncedMedia = await this.prisma.media.update({
-        where: { id: existingExtId.mediaId },
-        data: {
-          ...mediaData,
-          genres: {
-            deleteMany: {}, // Clear existing genres relation
-            create: genres.map(g => ({
-              genre: { connect: { id: g.id } }
-            }))
+      const mediaData = {
+        title: media.title,
+        titleEnglish: media.titleEnglish,
+        titleNative: media.titleNative,
+        synopsis: media.synopsis,
+        type: (media.type || 'TV') as MediaType,
+        format: (media.type || 'TV') as MediaFormat,
+        status: (media.status || 'UNKNOWN') as MediaStatus,
+        seasonYear: media.seasonYear,
+        seasonQuarter: media.seasonQuarter ? (media.seasonQuarter as SeasonQuarter) : null,
+        episodeCount: media.episodeCount,
+        coverImage: media.coverImage,
+        bannerImage: media.bannerImage,
+        averageScore: media.averageScore,
+        popularity: media.popularity,
+        startDate: media.startDate,
+        endDate: media.endDate,
+      };
+
+      let syncedMedia;
+
+      if (existingExtId) {
+        // Update existing
+        syncedMedia = await tx.media.update({
+          where: { id: existingExtId.mediaId },
+          data: {
+            ...mediaData,
+            genres: {
+              deleteMany: {}, // Clear existing genres relation
+              create: genres.map(g => ({
+                genre: { connect: { id: g.id } }
+              }))
+            }
+          }
+        });
+
+        // Upsert external IDs
+        for (const ext of media.externalIds) {
+          await tx.externalId.upsert({
+            where: { provider_externalId: { provider: ext.provider, externalId: ext.externalId } },
+            create: { provider: ext.provider, externalId: ext.externalId, mediaId: existingExtId.mediaId },
+            update: {}
+          });
+        }
+
+        // Upsert episodes safely
+        if (media.episodes && media.episodes.length > 0) {
+          for (const ep of media.episodes) {
+            await tx.episode.upsert({
+              where: { mediaId_number: { mediaId: existingExtId.mediaId, number: ep.number } },
+              create: { mediaId: existingExtId.mediaId, number: ep.number, title: ep.title, synopsis: ep.synopsis, aired: ep.aired },
+              update: { title: ep.title, synopsis: ep.synopsis, aired: ep.aired }
+            });
           }
         }
-      });
-    } else {
-      // Create new
-      syncedMedia = await this.prisma.media.create({
-        data: {
-          ...mediaData,
-          externalIds: {
-            create: media.externalIds.map(e => ({
-              provider: e.provider,
-              externalId: e.externalId
-            }))
-          },
-          genres: {
-            create: genres.map(g => ({
-              genre: { connect: { id: g.id } }
-            }))
+      } else {
+        // Create new
+        syncedMedia = await tx.media.create({
+          data: {
+            ...mediaData,
+            externalIds: {
+              create: media.externalIds.map(e => ({
+                provider: e.provider,
+                externalId: e.externalId
+              }))
+            },
+            genres: {
+              create: genres.map(g => ({
+                genre: { connect: { id: g.id } }
+              }))
+            },
+            episodes: media.episodes && media.episodes.length > 0 ? {
+              create: media.episodes.map(ep => ({
+                number: ep.number,
+                title: ep.title,
+                synopsis: ep.synopsis,
+                aired: ep.aired
+              }))
+            } : undefined
           }
-        }
-      });
-    }
+        });
+      }
 
-    return syncedMedia;
+      return syncedMedia;
+    });
   }
 }

@@ -29,11 +29,15 @@ export class ProviderRegistry {
       orderBy: { priority: 'desc' }
     });
 
-    const activeProviders = dbProviders.filter(p => !p.health?.circuitOpen && this.resolvers.has(p.id));
+    const activeProviders = dbProviders.filter(p => !p.health?.circuitOpen && this.resolvers.has(p.name));
     
+    console.log(`[Registry] Found ${dbProviders.length} db providers, ${activeProviders.length} active.`);
+    console.log(`[Registry] Resolvers: ${Array.from(this.resolvers.keys()).join(', ')}`);
+    console.log(`[Registry] DB Providers: ${dbProviders.map(p => p.name).join(', ')}`);
+
     // 2. Execute resolution concurrently
     const promises = activeProviders.map(async (p) => {
-      const resolver = this.resolvers.get(p.id)!;
+      const resolver = this.resolvers.get(p.name)!;
       const startTime = Date.now();
       try {
         const streams = await resolver.resolve(episodeId, language);
@@ -48,7 +52,8 @@ export class ProviderRegistry {
         await this.healthService.resetFailures(p.id); // Reset failures on success
         return safeStreams;
       } catch (error: any) {
-        await this.healthService.recordFailure(p.id, error.message || 'Resolution failed');
+        console.error(`[Registry] Error in provider ${p.name}:`, error);
+        await this.healthService.recordFailure(p.name, error.message || 'Resolution failed');
         return [];
       }
     });
