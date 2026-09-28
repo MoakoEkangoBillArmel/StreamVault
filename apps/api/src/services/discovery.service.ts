@@ -1,13 +1,13 @@
 import { CanonicalMedia } from '@streaming/shared';
-import { JikanService } from './jikan.service';
+import { AnilistService } from './anilist.service';
 import { cacheQuery } from '../lib/cache';
 
-const jikan = new JikanService();
+const anilist = new AnilistService();
 
 export class DiscoveryService {
   async getTrending(page = 1): Promise<CanonicalMedia[]> {
     return cacheQuery(
-      () => jikan.getTrending(page),
+      () => anilist.getTrending(page),
       ['discovery-trending', page.toString()],
       { revalidate: 3600 } // Cache 1 hour
     );
@@ -15,7 +15,7 @@ export class DiscoveryService {
 
   async getPopular(page = 1): Promise<CanonicalMedia[]> {
     return cacheQuery(
-      () => jikan.searchAnime('', page), // Jikan default search order is popularity
+      () => anilist.searchAnime('', page), // Anilist handles empty query based on trending/score
       ['discovery-popular', page.toString()],
       { revalidate: 3600 }
     );
@@ -23,7 +23,7 @@ export class DiscoveryService {
 
   async getSeasonal(year: number, quarter: string, page = 1): Promise<CanonicalMedia[]> {
     return cacheQuery(
-      () => jikan.getSeasonal(year, quarter.toLowerCase(), page),
+      () => anilist.getSeasonal(year, quarter, page),
       ['discovery-seasonal', year.toString(), quarter, page.toString()],
       { revalidate: 21600 } // Cache 6 hours
     );
@@ -31,7 +31,7 @@ export class DiscoveryService {
 
   async getSimilar(mediaId: string): Promise<CanonicalMedia[]> {
     return cacheQuery(
-      () => jikan.getRecommendations(mediaId),
+      () => anilist.getRecommendations(mediaId),
       ['discovery-similar', mediaId],
       { revalidate: 86400 } // Cache 24 hours
     );

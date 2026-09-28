@@ -57,6 +57,45 @@ export class MetadataNormalizer {
     };
   }
 
+  public static fromAnilist(anime: any): CanonicalMedia {
+    const genres = anime.genres || [];
+
+    const externalIds = [{ provider: 'anilist', externalId: anime.id.toString() }];
+    if (anime.idMal) {
+      externalIds.push({ provider: 'jikan', externalId: anime.idMal.toString() });
+    }
+
+    return {
+      title: anime.title?.romaji || anime.title?.english || 'Unknown',
+      titleEnglish: anime.title?.english || null,
+      titleNative: anime.title?.native || null,
+      synopsis: anime.description || null,
+      type: 'TV', // Anilist format isn't strictly 'type' in this query, defaulting
+      format: 'TV',
+      status: this.mapAnilistStatus(anime.status),
+      seasonYear: null,
+      seasonQuarter: null,
+      episodeCount: anime.episodes || null,
+      coverImage: anime.coverImage?.extraLarge || anime.coverImage?.large || null,
+      bannerImage: anime.bannerImage || null,
+      averageScore: anime.averageScore ? anime.averageScore / 10 : null, // Anilist is 0-100, we map to 0-10
+      popularity: null,
+      startDate: null,
+      endDate: null,
+      genres: Array.from(new Set(genres)),
+      externalIds
+    };
+  }
+
+  private static mapAnilistStatus(status?: string | null): string {
+    const s = status?.toUpperCase();
+    if (s === 'RELEASING') return 'RELEASING';
+    if (s === 'FINISHED') return 'FINISHED';
+    if (s === 'NOT_YET_RELEASED') return 'NOT_YET_RELEASED';
+    if (s === 'CANCELLED') return 'CANCELLED';
+    return 'UNKNOWN';
+  }
+
   private static mapType(jikanType?: string | null): string {
     const t = jikanType?.toUpperCase();
     if (t === 'TV' || t === 'MOVIE' || t === 'OVA' || t === 'ONA' || t === 'SPECIAL' || t === 'MUSIC') return t;

@@ -1,29 +1,30 @@
 import { router, publicProcedure } from '../trpc/trpc';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { JikanService } from '../services/jikan.service';
+import { AnilistService } from '../services/anilist.service';
 import { CatalogSyncService } from '../services/catalog-sync.service';
 
-const jikan = new JikanService();
+const anilist = new AnilistService();
 
 export const catalogRouter = router({
   getById: publicProcedure
-    .input(z.string()) // This can be our internal CUID or a mal_id as string
+    .input(z.string()) // This can be our internal CUID or a mal_id / anilist_id as string
     .query(async ({ ctx, input }) => {
-      // 1. Try to find in DB (either by CUID or externalId 'jikan')
+      // 1. Try to find in DB (either by CUID or externalId 'jikan' or 'anilist')
       let media = await ctx.prisma.media.findFirst({
         where: {
           OR: [
             { id: input },
-            { externalIds: { some: { provider: 'jikan', externalId: input } } }
+            { externalIds: { some: { provider: 'jikan', externalId: input } } },
+            { externalIds: { some: { provider: 'anilist', externalId: input } } }
           ]
         },
         include: { episodes: true, genres: { include: { genre: true } }, externalIds: true },
       });
 
-      // 2. If not found in DB, try to fetch from Jikan and sync
+      // 2. If not found in DB, try to fetch from Anilist and sync
       if (!media) {
-        const canonical = await jikan.getAnimeById(input);
+        const canonical = await anilist.getAnimeById(input);
         if (!canonical) {
           throw new TRPCError({ code: 'NOT_FOUND', message: 'Anime not found' });
         }

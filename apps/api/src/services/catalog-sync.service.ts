@@ -5,13 +5,15 @@ export class CatalogSyncService {
   constructor(private prisma: PrismaClient) {}
 
   public async syncMedia(media: CanonicalMedia) {
-    const jikanId = media.externalIds.find(e => e.provider === 'jikan')?.externalId;
-    if (!jikanId) throw new Error('Cannot sync media without Jikan ID');
+    if (media.externalIds.length === 0) throw new Error('Cannot sync media without external IDs');
 
     // Find existing media by external ID
-    const existingExtId = await this.prisma.externalId.findUnique({
+    const existingExtId = await this.prisma.externalId.findFirst({
       where: {
-        provider_externalId: { provider: 'jikan', externalId: jikanId }
+        OR: media.externalIds.map(e => ({
+          provider: e.provider,
+          externalId: e.externalId
+        }))
       },
       include: { media: true }
     });

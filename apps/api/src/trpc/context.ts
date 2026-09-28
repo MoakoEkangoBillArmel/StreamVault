@@ -10,7 +10,10 @@ export async function createContext(req: NextRequest) {
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.substring(7);
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as {
+      if (!process.env.JWT_SECRET) {
+        throw new Error('CRITICAL: JWT_SECRET is not set in environment variables');
+      }
+      const decoded = jwt.verify(token, process.env.JWT_SECRET) as {
         id: string;
         email: string;
         role: string;
