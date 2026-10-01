@@ -81,8 +81,8 @@ export class CatalogSyncService {
           for (const ep of media.episodes) {
             await tx.episode.upsert({
               where: { mediaId_number: { mediaId: existingExtId.mediaId, number: ep.number } },
-              create: { mediaId: existingExtId.mediaId, number: ep.number, title: ep.title, synopsis: ep.synopsis, aired: ep.aired },
-              update: { title: ep.title, synopsis: ep.synopsis, aired: ep.aired }
+              create: { mediaId: existingExtId.mediaId, number: ep.number, title: ep.title, aired: ep.aired },
+              update: { title: ep.title, aired: ep.aired }
             });
           }
         }
@@ -106,7 +106,6 @@ export class CatalogSyncService {
               create: media.episodes.map(ep => ({
                 number: ep.number,
                 title: ep.title,
-                synopsis: ep.synopsis,
                 aired: ep.aired
               }))
             } : undefined

@@ -1,4 +1,4 @@
-process.env.NODE_ENV = 'test';
+// Environment is set via CLI
 import { appRouter } from './src/routers';
 import { PrismaClient } from '@prisma/client';
 
@@ -47,6 +47,7 @@ async function runAudit() {
   console.log('\n--- 6. CATALOGUE ---');
   let mediaId = '';
   const media = await anonCaller.catalog.getById('1'); // Cowboy Bebop
+  if (!media) throw new Error('Media not found');
   mediaId = media.id;
   console.log('✅ CATALOG: getById fetched Cowboy Bebop');
 

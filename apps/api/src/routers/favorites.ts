@@ -1,5 +1,6 @@
 import { router, protectedProcedure } from '../trpc/trpc';
 import { ToggleMediaInput } from '@streaming/shared';
+import { TRPCError } from '@trpc/server';
 
 export const favoritesRouter = router({
   list: protectedProcedure
