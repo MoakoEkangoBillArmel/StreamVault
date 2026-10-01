@@ -36,3 +36,5 @@ Ce document dÃ©crit la roadmap technique et les fonctionnalitÃ©s planifiÃ©es.
 - [ ] Monitoring et alertes (Sentry)
 
 - [ ] Système de récompenses et badges utilisateurs (Frontend)
+
+

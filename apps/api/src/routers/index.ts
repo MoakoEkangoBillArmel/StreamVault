@@ -8,6 +8,7 @@ import { favoritesRouter } from './favorites';
 import { watchlistRouter } from './watchlist';
 import { watchRouter } from './watch';
 import { historyRouter } from './history';
+import { dataRouter } from './data';
 
 export const appRouter = router({
   auth: authRouter,
@@ -19,6 +20,7 @@ export const appRouter = router({
   watchlist: watchlistRouter,
   watch: watchRouter,
   history: historyRouter,
+  data: dataRouter,
 });
 
 export type AppRouter = typeof appRouter;
