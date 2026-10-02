@@ -39,4 +39,9 @@ Ce document décrit la roadmap technique et les fonctionnalités planifiées.
 - [ ] Déploiement Vercel (API & Web) + Neon (DB)
 - [ ] CDN pour les assets statiques
 - [ ] Monitoring et alertes (Sentry)
+<<<<<<< HEAD
 - [ ] Analytics de visionnage
+=======
+
+- [ ] Syst�me de r�compenses et badges utilisateurs (Frontend)
+>>>>>>> origin/main
