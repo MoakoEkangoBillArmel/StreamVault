@@ -76,21 +76,29 @@ export const dataRouter = router({
         ...input.history.map((h) => h.mediaId),
       ]);
 
-      const existingMedia = await ctx.prisma.media.findMany({
+      const existingMedia = allMediaIds.size > 0 ? await ctx.prisma.media.findMany({
         where: { id: { in: Array.from(allMediaIds) } },
         select: { id: true },
-      });
+      }) : [];
       const validMediaIds = new Set(existingMedia.map((m) => m.id));
 
       let errors = 0;
       let ignored = 0;
       let newItems = 0;
-      let duplicates = 0; // Oversimplified: without deeply querying existing items for the user, we just approximate or we query them.
+      let duplicates = 0;
 
-      // Let's actually query existing items for this user to be precise
       const userId = ctx.user.id;
-      const currentFavs = await ctx.prisma.favorite.findMany({ where: { userId }, select: { mediaId: true } });
+      const [currentFavs, currentWatch, currentProg, currentHist] = await Promise.all([
+        ctx.prisma.favorite.findMany({ where: { userId }, select: { mediaId: true } }),
+        ctx.prisma.watchlistItem.findMany({ where: { userId }, select: { mediaId: true } }),
+        ctx.prisma.watchProgress.findMany({ where: { userId }, select: { mediaId: true } }),
+        ctx.prisma.watchHistory.findMany({ where: { userId }, include: { episode: true } }),
+      ]);
+
       const currentFavSet = new Set(currentFavs.map((f) => f.mediaId));
+      const currentWatchSet = new Set(currentWatch.map((w) => w.mediaId));
+      const currentProgSet = new Set(currentProg.map((p) => p.mediaId));
+      const currentHistSet = new Set(currentHist.map((h) => `${h.episode.mediaId}-${h.episode.number}`));
 
       input.favorites.forEach((f) => {
         if (!validMediaIds.has(f.mediaId)) {
@@ -103,8 +111,33 @@ export const dataRouter = router({
         }
       });
 
-      // Repeat for watchlist, progress, history...
-      // For simplicity in the preview, we just aggregate total counts.
+      input.watchlist.forEach((w) => {
+        if (!validMediaIds.has(w.mediaId)) {
+          ignored++;
+          errors++;
+        } else if (currentWatchSet.has(w.mediaId)) {
+          duplicates++;
+        }
+      });
+
+      input.progress.forEach((p) => {
+        if (!validMediaIds.has(p.mediaId)) {
+          ignored++;
+          errors++;
+        } else if (currentProgSet.has(p.mediaId)) {
+          duplicates++;
+        }
+      });
+
+      input.history.forEach((h) => {
+        if (!validMediaIds.has(h.mediaId)) {
+          ignored++;
+          errors++;
+        } else if (currentHistSet.has(`${h.mediaId}-${h.episodeNumber}`)) {
+          duplicates++;
+        }
+      });
+
       const totalItems = input.favorites.length + input.watchlist.length + input.progress.length + input.history.length;
 
       return {
@@ -113,7 +146,7 @@ export const dataRouter = router({
         watchlistCount: input.watchlist.length,
         progressCount: input.progress.length,
         historyCount: input.history.length,
-        newItems, // (approximate based on favorites only for this example, but accurate enough for the preview requirement)
+        newItems,
         duplicates,
         ignored,
         errors,
@@ -140,10 +173,10 @@ export const dataRouter = router({
         ...input.history.map((h) => h.mediaId),
       ]);
 
-      const existingMedia = await ctx.prisma.media.findMany({
+      const existingMedia = allMediaIds.size > 0 ? await ctx.prisma.media.findMany({
         where: { id: { in: Array.from(allMediaIds) } },
         select: { id: true },
-      });
+      }) : [];
       const validMediaIds = new Set(existingMedia.map((m) => m.id));
 
       const validFavorites = input.favorites.filter((f) => validMediaIds.has(f.mediaId));
@@ -151,14 +184,14 @@ export const dataRouter = router({
       const validProgress = input.progress.filter((p) => validMediaIds.has(p.mediaId));
       const validHistory = input.history.filter((h) => validMediaIds.has(h.mediaId));
 
-      // Fetch valid episodes for history
+      // Fetch valid episodes for history safely
       const episodeLookups = validHistory.map((h) => ({ mediaId: h.mediaId, number: h.episodeNumber }));
-      const existingEpisodes = await ctx.prisma.episode.findMany({
+      const existingEpisodes = episodeLookups.length > 0 ? await ctx.prisma.episode.findMany({
         where: {
           OR: episodeLookups.map((l) => ({ mediaId: l.mediaId, number: l.number })),
         },
         select: { id: true, mediaId: true, number: true },
-      });
+      }) : [];
 
       const episodeMap = new Map<string, string>();
       existingEpisodes.forEach((ep) => {
@@ -235,6 +268,9 @@ export const dataRouter = router({
             });
           }
         }
+      }, {
+        maxWait: 10000,
+        timeout: 30000,
       });
 
       return {

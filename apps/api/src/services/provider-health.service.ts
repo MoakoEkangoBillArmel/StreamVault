@@ -5,47 +5,65 @@ export class ProviderHealthService {
 
   async recordSuccess(providerId: string, latencyMs: number) {
     const health = await this.prisma.providerHealth.findUnique({ where: { providerId } });
-    if (!health) return;
+    const successCount = (health?.successCount || 0) + 1;
+    const currentAvg = health?.avgLatencyMs || 0;
+    const newAvg = Math.floor((currentAvg * (health?.successCount || 0) + latencyMs) / successCount);
 
-    // Moving average for latency
-    const newAvg = Math.floor((health.avgLatencyMs * health.successCount + latencyMs) / (health.successCount + 1));
-
-    await this.prisma.providerHealth.update({
+    await this.prisma.providerHealth.upsert({
       where: { providerId },
-      data: {
+      create: {
+        providerId,
+        successCount: 1,
+        failureCount: 0,
+        avgLatencyMs: latencyMs,
+        lastChecked: new Date(),
+        circuitOpen: false,
+      },
+      update: {
         successCount: { increment: 1 },
+        failureCount: 0,
         avgLatencyMs: newAvg,
         lastChecked: new Date(),
-        circuitOpen: false // close circuit on success
-      }
+        circuitOpen: false,
+      },
     });
   }
 
   async recordFailure(providerId: string, errorMsg: string) {
     const health = await this.prisma.providerHealth.findUnique({ where: { providerId } });
-    if (!health) return;
-
-    const newFailureCount = health.failureCount + 1;
-    // Circuit breaker logic: if more than 5 consecutive failures, open the circuit
-    // (Assuming success resets failureCount, which we should do in recordSuccess)
+    const newFailureCount = (health?.failureCount || 0) + 1;
     const circuitOpen = newFailureCount >= 5;
 
-    await this.prisma.providerHealth.update({
+    await this.prisma.providerHealth.upsert({
       where: { providerId },
-      data: {
+      create: {
+        providerId,
+        successCount: 0,
+        failureCount: 1,
+        avgLatencyMs: 0,
+        lastFailure: new Date(),
+        lastFailureMsg: errorMsg,
+        lastChecked: new Date(),
+        circuitOpen: false,
+      },
+      update: {
         failureCount: newFailureCount,
         lastFailure: new Date(),
         lastFailureMsg: errorMsg,
         lastChecked: new Date(),
-        circuitOpen
-      }
+        circuitOpen,
+      },
     });
   }
 
   async resetFailures(providerId: string) {
-    await this.prisma.providerHealth.update({
-      where: { providerId },
-      data: { failureCount: 0, circuitOpen: false }
-    });
+    try {
+      await this.prisma.providerHealth.update({
+        where: { providerId },
+        data: { failureCount: 0, circuitOpen: false },
+      });
+    } catch {
+      // Ignore if providerHealth record not found
+    }
   }
 }

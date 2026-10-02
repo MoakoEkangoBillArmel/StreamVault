@@ -51,9 +51,9 @@ export const catalogRouter = router({
 
   getByGenre: publicProcedure
     .input(z.object({
-      genre: z.string(),
-      page: z.number().default(1),
-      limit: z.number().default(20)
+      genre: z.string().min(1).max(50),
+      page: z.number().int().min(1).default(1),
+      limit: z.number().int().min(1).max(100).default(20)
     }))
     .query(async ({ ctx, input }) => {
       const { genre, page, limit } = input;
@@ -61,7 +61,7 @@ export const catalogRouter = router({
 
       const items = await ctx.prisma.media.findMany({
         where: {
-          genres: { some: { genre: { name: genre } } }
+          genres: { some: { genre: { name: { equals: genre, mode: 'insensitive' } } } }
         },
         skip,
         take: limit,

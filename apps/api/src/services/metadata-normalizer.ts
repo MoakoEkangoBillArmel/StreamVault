@@ -39,6 +39,7 @@ export class MetadataNormalizer {
       titleNative: anime.title_japanese || null,
       synopsis: anime.synopsis || null,
       type: this.mapType(anime.type),
+      format: this.mapType(anime.type),
       status: this.mapStatus(anime.status),
       seasonYear: anime.year || null,
       seasonQuarter: anime.season ? anime.season.toUpperCase() : null,
@@ -102,10 +103,10 @@ export class MetadataNormalizer {
     return 'UNKNOWN';
   }
 
-  private static mapType(jikanType?: string | null): string | null {
+  private static mapType(jikanType?: string | null): string {
     const t = jikanType?.toUpperCase();
     if (t === 'TV' || t === 'MOVIE' || t === 'OVA' || t === 'ONA' || t === 'SPECIAL' || t === 'MUSIC') return t;
-    return null; // Fallback
+    return 'TV'; // Fallback
   }
 
   private static mapStatus(jikanStatus?: string | null): string {

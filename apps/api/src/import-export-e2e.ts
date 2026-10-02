@@ -1,7 +1,7 @@
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'streamvault-super-secure-jwt-secret-key-32chars-min';
+(process.env as any).NODE_ENV = process.env.NODE_ENV || 'test';
 import { appRouter } from './routers';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from './lib/prisma';
 
 async function run() {
   console.log('--- STARTING REAL E2E TEST FOR IMPORT/EXPORT ---');

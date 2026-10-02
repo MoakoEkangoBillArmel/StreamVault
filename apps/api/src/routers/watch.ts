@@ -1,6 +1,7 @@
 import { router, protectedProcedure } from '../trpc/trpc';
 import { z } from 'zod';
 import { UpdateWatchProgressInput } from '@streaming/shared';
+import { TRPCError } from '@trpc/server';
 
 export const watchRouter = router({
   getProgress: protectedProcedure
@@ -19,6 +20,13 @@ export const watchRouter = router({
   updateProgress: protectedProcedure
     .input(UpdateWatchProgressInput)
     .mutation(async ({ ctx, input }) => {
+      const media = await ctx.prisma.media.findUnique({
+        where: { id: input.mediaId },
+      });
+      if (!media) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Media not found' });
+      }
+
       return ctx.prisma.watchProgress.upsert({
         where: {
           userId_mediaId: {
@@ -78,7 +86,14 @@ export const watchRouter = router({
         // Fetch history for this episode from map
         const history = historyMap.get(lastEpisode.id);
 
-        if (!history) continue;
+        if (!history) {
+          continueWatching.push({
+            media: p.media,
+            episode: lastEpisode,
+            resumePosition: 0,
+          });
+          continue;
+        }
 
         if (history.completed) {
           // If completed, suggest the NEXT episode

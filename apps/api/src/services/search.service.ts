@@ -39,15 +39,14 @@ export class SearchService {
       const tsQuery = q.trim();
       
       // Building dynamic raw conditions
-      const conditions: string[] = [`"title_search" @@ websearch_to_tsquery('english', $1)`];
+      const conditions: string[] = [`m."title_search" @@ websearch_to_tsquery('english', $1)`];
       const params: any[] = [tsQuery];
       let paramIndex = 2;
 
-      if (type) { conditions.push(`"type" = $${paramIndex++}`); params.push(type); }
-      if (status) { conditions.push(`"status" = $${paramIndex++}`); params.push(status); }
-      if (seasonYear) { conditions.push(`"seasonYear" = $${paramIndex++}`); params.push(seasonYear); }
-      if (seasonQuarter) { conditions.push(`"seasonQuarter" = $${paramIndex++}`); params.push(seasonQuarter); }
-      // Genre filtering in raw SQL is complex due to join, so if genre is provided with Q, we might just filter after or join
+      if (type) { conditions.push(`m."type"::text = $${paramIndex++}`); params.push(type); }
+      if (status) { conditions.push(`m."status"::text = $${paramIndex++}`); params.push(status); }
+      if (seasonYear) { conditions.push(`m."seasonYear" = $${paramIndex++}`); params.push(seasonYear); }
+      if (seasonQuarter) { conditions.push(`m."seasonQuarter"::text = $${paramIndex++}`); params.push(seasonQuarter); }
 
       let joinClause = '';
       if (genre) {
@@ -55,7 +54,7 @@ export class SearchService {
           INNER JOIN "MediaGenre" mg ON mg."mediaId" = m.id
           INNER JOIN "Genre" g ON g.id = mg."genreId"
         `;
-        conditions.push(`g.name = $${paramIndex++}`);
+        conditions.push(`g.name ILIKE $${paramIndex++}`);
         params.push(genre);
       }
 

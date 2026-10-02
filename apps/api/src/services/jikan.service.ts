@@ -55,7 +55,9 @@ export class JikanService implements MetadataProvider {
 
   private async fetchJson<T>(path: string): Promise<T> {
     return this.rateLimiter.enqueue(async () => {
-      const res = await fetch(`${this.baseUrl}${path}`);
+      const res = await fetch(`${this.baseUrl}${path}`, {
+        signal: AbortSignal.timeout(10000),
+      });
       if (!res.ok) {
         if (res.status === 429) {
           // Could implement backoff here, but rate limiter should prevent this

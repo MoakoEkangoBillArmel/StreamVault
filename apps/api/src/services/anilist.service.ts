@@ -61,14 +61,15 @@ export class AnilistService implements MetadataProvider {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({ query, variables })
+        body: JSON.stringify({ query, variables }),
+        signal: AbortSignal.timeout(10000),
       });
 
       if (!res.ok) {
         throw new Error(`Anilist API Error: ${res.statusText}`);
       }
 
-      const json = await res.json();
+      const json = (await res.json()) as any;
       if (json.errors) {
         throw new Error(`Anilist GraphQL Error: ${json.errors[0].message}`);
       }

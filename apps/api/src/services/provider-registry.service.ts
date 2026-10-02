@@ -53,7 +53,7 @@ export class ProviderRegistry {
         return safeStreams;
       } catch (error: any) {
         console.error(`[Registry] Error in provider ${p.name}:`, error);
-        await this.healthService.recordFailure(p.name, error.message || 'Resolution failed');
+        await this.healthService.recordFailure(p.id, error.message || 'Resolution failed');
         return [];
       }
     });

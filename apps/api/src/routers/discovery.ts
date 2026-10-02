@@ -6,25 +6,29 @@ const discoveryService = new DiscoveryService();
 
 export const discoveryRouter = router({
   trending: publicProcedure
-    .input(z.object({ page: z.number().default(1) }).optional())
+    .input(z.object({ page: z.number().int().min(1).max(50).default(1) }).optional())
     .query(async ({ input }) => {
       return discoveryService.getTrending(input?.page);
     }),
 
   popular: publicProcedure
-    .input(z.object({ page: z.number().default(1) }).optional())
+    .input(z.object({ page: z.number().int().min(1).max(50).default(1) }).optional())
     .query(async ({ input }) => {
       return discoveryService.getPopular(input?.page);
     }),
 
   seasonal: publicProcedure
-    .input(z.object({ year: z.number(), quarter: z.string(), page: z.number().default(1) }))
+    .input(z.object({
+      year: z.number().int().min(1960).max(2100),
+      quarter: z.string().min(1).max(10),
+      page: z.number().int().min(1).max(50).default(1)
+    }))
     .query(async ({ input }) => {
       return discoveryService.getSeasonal(input.year, input.quarter, input.page);
     }),
 
   similar: publicProcedure
-    .input(z.object({ mediaId: z.string() }))
+    .input(z.object({ mediaId: z.string().min(1) }))
     .query(async ({ input }) => {
       return discoveryService.getSimilar(input.mediaId);
     }),

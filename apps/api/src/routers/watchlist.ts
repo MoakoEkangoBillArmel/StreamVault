@@ -34,13 +34,20 @@ export const watchlistRouter = router({
         });
         return { added: false };
       } else {
-        await ctx.prisma.watchlistItem.create({
-          data: {
-            userId: ctx.user.id,
-            mediaId: input.mediaId,
-          },
-        });
-        return { added: true };
+        try {
+          await ctx.prisma.watchlistItem.create({
+            data: {
+              userId: ctx.user.id,
+              mediaId: input.mediaId,
+            },
+          });
+          return { added: true };
+        } catch (err: any) {
+          if (err.code === 'P2002') {
+            return { added: true };
+          }
+          throw err;
+        }
       }
     }),
 });

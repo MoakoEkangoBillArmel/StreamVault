@@ -6,12 +6,25 @@ import jwt from 'jsonwebtoken';
 
 const loginAttempts = new Map<string, { count: number, resetTime: number }>();
 
+function cleanupExpiredAttempts(now: number) {
+  if (loginAttempts.size > 1000) {
+    for (const [key, val] of loginAttempts.entries()) {
+      if (now > val.resetTime) {
+        loginAttempts.delete(key);
+      }
+    }
+  }
+}
+
 export const authRouter = router({
   login: publicProcedure
     .input(UserLoginInput)
     .mutation(async ({ ctx, input }) => {
+      const email = input.email.toLowerCase().trim();
       const now = Date.now();
-      const attempt = loginAttempts.get(input.email) || { count: 0, resetTime: now + 15 * 60 * 1000 };
+      cleanupExpiredAttempts(now);
+
+      const attempt = loginAttempts.get(email) || { count: 0, resetTime: now + 15 * 60 * 1000 };
       
       if (now > attempt.resetTime) {
         attempt.count = 0;
@@ -25,10 +38,10 @@ export const authRouter = router({
         });
       }
 
-      loginAttempts.set(input.email, { count: attempt.count + 1, resetTime: attempt.resetTime });
+      loginAttempts.set(email, { count: attempt.count + 1, resetTime: attempt.resetTime });
 
       const user = await ctx.prisma.user.findUnique({
-        where: { email: input.email },
+        where: { email },
       });
       
       if (!user) {
@@ -45,6 +58,9 @@ export const authRouter = router({
           message: 'Invalid email or password',
         });
       }
+
+      // Successful login resets brute-force attempt counter
+      loginAttempts.delete(email);
 
       if (!process.env.JWT_SECRET) {
         throw new TRPCError({
@@ -73,8 +89,9 @@ export const authRouter = router({
   register: publicProcedure
     .input(UserRegisterInput)
     .mutation(async ({ ctx, input }) => {
+      const email = input.email.toLowerCase().trim();
       const existingUser = await ctx.prisma.user.findUnique({
-        where: { email: input.email },
+        where: { email },
       });
 
       if (existingUser) {
@@ -86,13 +103,24 @@ export const authRouter = router({
 
       const hashedPassword = await bcrypt.hash(input.password, 10);
 
-      const user = await ctx.prisma.user.create({
-        data: {
-          email: input.email,
-          password: hashedPassword,
-          name: input.name,
-        },
-      });
+      let user;
+      try {
+        user = await ctx.prisma.user.create({
+          data: {
+            email,
+            password: hashedPassword,
+            name: input.name ? input.name.trim() : null,
+          },
+        });
+      } catch (err: any) {
+        if (err.code === 'P2002') {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: 'User already exists',
+          });
+        }
+        throw err;
+      }
 
       if (!process.env.JWT_SECRET) {
         throw new TRPCError({

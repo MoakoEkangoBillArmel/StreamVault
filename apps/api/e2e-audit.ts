@@ -1,8 +1,8 @@
-// Environment is set via CLI
+// Environment is set via CLI or fallback
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'streamvault-super-secure-jwt-secret-key-32chars-min';
+(process.env as any).NODE_ENV = process.env.NODE_ENV || 'test';
 import { appRouter } from './src/routers';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from './src/lib/prisma';
 
 async function runAudit() {
   console.log('=============================================');

@@ -1,6 +1,7 @@
 import { router, protectedProcedure } from '../trpc/trpc';
 import { z } from 'zod';
 import { UpsertWatchHistoryInput } from '@streaming/shared';
+import { TRPCError } from '@trpc/server';
 
 export const historyRouter = router({
   getEpisodeHistory: protectedProcedure
@@ -19,6 +20,13 @@ export const historyRouter = router({
   upsertPosition: protectedProcedure
     .input(UpsertWatchHistoryInput)
     .mutation(async ({ ctx, input }) => {
+      const episode = await ctx.prisma.episode.findUnique({
+        where: { id: input.episodeId },
+      });
+      if (!episode) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Episode not found' });
+      }
+
       return ctx.prisma.watchHistory.upsert({
         where: {
           userId_episodeId: {
